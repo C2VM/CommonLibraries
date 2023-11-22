@@ -5622,6 +5622,12 @@ public class PatchedLaneSystem : GameSystemBase
                             isUnsafe = true;
                         }
 
+                        if (isCentreSideLane && isUTurn && uTurnConnectionNeeded == 0)
+                        {
+                            isForbidden = true;
+                            isUnsafe = true;
+                        }
+
                         if (!isUnsafe && !isForbidden)
                         {
                             if (restriction.m_BanLeft && isLeft)
