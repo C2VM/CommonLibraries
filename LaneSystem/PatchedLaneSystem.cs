@@ -5630,11 +5630,11 @@ public class PatchedLaneSystem : GameSystemBase
 
                         if (!isUnsafe && !isForbidden)
                         {
-                            if (restriction.m_BanLeft && isLeft)
+                            if (restriction.m_BanLeft && isLeft && !isUTurn)
                             {
                                 continue;
                             }
-                            if (restriction.m_BanRight && isRight)
+                            if (restriction.m_BanRight && isRight && !isUTurn)
                             {
                                 continue;
                             }
