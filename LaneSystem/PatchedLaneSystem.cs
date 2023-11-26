@@ -5459,6 +5459,8 @@ public class PatchedLaneSystem : GameSystemBase
                 int leftTurnConnectionNeeded = 0;
                 int rightTurnConnectionNeeded = 0;
                 int uTurnConnectionNeeded = 0;
+                int kerbSideTurnTargetCount = 0;
+                int centreSideTurnTargetCount = 0;
 
                 CustomLaneDirection[] customLaneDirectionArray = new CustomLaneDirection[sourceBuffer.Length];
 
@@ -5511,6 +5513,31 @@ public class PatchedLaneSystem : GameSystemBase
                     if (!restriction.m_BanUTurn)
                     {
                         uTurnConnectionNeeded++;
+                    }
+                }
+
+                if (sourceBuffer.Length > 0)
+                {
+                    sourcePosition = sourceBuffer[0];
+                    for (int i = 0; i < targetBuffer.Length; i++)
+                    {
+                        ConnectPosition targetPosition = targetBuffer[i];
+                        bool isTurn = IsTurn(sourcePosition, targetPosition, out bool isRight, out bool isGentle, out bool isUTurn);
+                        bool isLeft = isTurn && !isRight;
+                        isRight = isTurn && isRight;
+
+                        bool isKerbSideTurn = (m_LeftHandTraffic && isLeft) || (!m_LeftHandTraffic && isRight);
+                        bool isCentreSideTurn = (m_LeftHandTraffic && isRight) || (!m_LeftHandTraffic && isLeft);
+
+                        if (isKerbSideTurn && !isUTurn)
+                        {
+                            kerbSideTurnTargetCount++;
+                        }
+
+                        if (isCentreSideTurn && !isUTurn)
+                        {
+                            centreSideTurnTargetCount++;
+                        }
                     }
                 }
 
@@ -5588,7 +5615,19 @@ public class PatchedLaneSystem : GameSystemBase
                         }
 
                         // Try to centre the connecting lanes
-                        if (!isTurn && j < currentTargetGroupEnd + 1 - straightConnectionNeeded - ((currentTargetGroupEnd + 1 - currentTargetGroupStart - straightConnectionNeeded) / 2))
+                        if (kerbSideTurnTargetCount > 0 && centreSideTurnTargetCount > 0 && !isTurn && j < currentTargetGroupEnd + 1 - straightConnectionNeeded - ((currentTargetGroupEnd + 1 - currentTargetGroupStart - straightConnectionNeeded) / 2))
+                        {
+                            continue;
+                        }
+
+                        // Three way junction centre ahead lanes
+                        if (m_LeftHandTraffic && kerbSideTurnTargetCount > 0 && centreSideTurnTargetCount == 0 && !isTurn && j < currentTargetGroupEnd + 1 - straightConnectionNeeded)
+                        {
+                            continue;
+                        }
+
+                        // Three way junction RHT align right
+                        if (!m_LeftHandTraffic && kerbSideTurnTargetCount == 0 && !isTurn && j < currentTargetGroupEnd + 1 - straightConnectionNeeded)
                         {
                             continue;
                         }
