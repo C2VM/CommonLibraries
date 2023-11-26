@@ -7,9 +7,12 @@ public struct ConnectPositionSource : IBufferElementData
 {
     public float3 m_Position;
 
-    public ConnectPositionSource(float3 position)
+    public int m_NodeLaneIndex;
+
+    public ConnectPositionSource(float3 position, int nodeLaneIndex)
     {
         m_Position = position;
+        m_NodeLaneIndex = nodeLaneIndex;
     }
 
     public bool Equals(ConnectPositionSource other)

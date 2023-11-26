@@ -5403,7 +5403,7 @@ public class PatchedLaneSystem : GameSystemBase
 
             for (int i = 0; i < sourceBuffer.Length; i++)
             {
-                ConnectPositionSource position = new ConnectPositionSource(sourceBuffer[i].m_Position);
+                ConnectPositionSource position = new ConnectPositionSource(sourceBuffer[i].m_Position, nodeLaneIndex);
                 if (m_ConnectPositionSource.HasBuffer(owner))
                 {
                     DynamicBuffer<ConnectPositionSource> connectPositionSourceBuffer = m_ConnectPositionSource[owner];
