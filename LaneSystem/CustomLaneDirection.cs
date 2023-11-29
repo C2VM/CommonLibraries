@@ -103,7 +103,13 @@ public struct CustomLaneDirection : IBufferElementData, IQueryTypeParameter, ISe
         public bool m_BanUTurn;
     }
 
-    public float3 m_SourcePosition;
+    public float3 m_Position;
+
+    public float3 m_Tangent;
+
+    public ushort m_GroupIndex;
+
+    public int m_LaneIndex;
 
     public Restriction m_Restriction;
 
@@ -118,21 +124,60 @@ public struct CustomLaneDirection : IBufferElementData, IQueryTypeParameter, ISe
         return DefaultConfig[laneCount][laneIndex];
     }
 
-    public CustomLaneDirection(float3 sourcePosition)
+    public CustomLaneDirection(float3 position, float3 tangent, ushort groupIndex, int laneIndex, Restriction restriction)
     {
-        m_SourcePosition = sourcePosition;
-    }
-
-    public CustomLaneDirection(float3 sourcePosition, Restriction restriction)
-    {
-        m_SourcePosition = sourcePosition;
+        m_Position = position;
+        m_Tangent = tangent;
+        m_GroupIndex = groupIndex;
+        m_LaneIndex = laneIndex;
         m_Restriction = restriction;
         m_Initialised = true;
     }
 
+    public bool Equals(CustomLaneDirection other)
+    {
+        if (this.Equals(other.m_Position, other.m_Tangent, other.m_GroupIndex, other.m_LaneIndex))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public bool Equals(float3 position, float3 tangent, ushort groupIndex, int laneIndex)
+    {
+        if (m_Position.Equals(position))
+        {
+            return true;
+        }
+        if (math.dot(math.normalizesafe(m_Tangent.xz), math.normalizesafe(tangent.xz)) > 0.99f && m_LaneIndex.Equals(laneIndex))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public static bool Get(DynamicBuffer<CustomLaneDirection> buffer, float3 position, float3 tangent, ushort groupIndex, int laneIndex, out CustomLaneDirection customLaneDirection)
+    {
+        customLaneDirection = default;
+        for (int i = 0; i < buffer.Length; i++)
+        {
+            if (buffer[i].Equals(position, tangent, groupIndex, laneIndex))
+            {
+                customLaneDirection = buffer[i];
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void Serialize<TWriter>(TWriter writer) where TWriter : IWriter
     {
-        writer.Write(m_SourcePosition);
+        writer.Write(float.MaxValue);
+        writer.Write((int) 2); // Schema version
+        writer.Write(m_Position);
+        writer.Write(m_Tangent);
+        writer.Write(m_GroupIndex);
+        writer.Write(m_LaneIndex);
         writer.Write(m_Restriction.m_BanLeft);
         writer.Write(m_Restriction.m_BanRight);
         writer.Write(m_Restriction.m_BanStraight);
@@ -141,11 +186,34 @@ public struct CustomLaneDirection : IBufferElementData, IQueryTypeParameter, ISe
 
     public void Deserialize<TReader>(TReader reader) where TReader : IReader
     {
-        reader.Read(out m_SourcePosition);
-        reader.Read(out m_Restriction.m_BanLeft);
-        reader.Read(out m_Restriction.m_BanRight);
-        reader.Read(out m_Restriction.m_BanStraight);
-        reader.Read(out m_Restriction.m_BanUTurn);
+        int schemaVersion;
+        reader.Read(out float float1);
+        if (float1 == float.MaxValue)
+        {
+            reader.Read(out schemaVersion);
+            if (schemaVersion == 2)
+            {
+                reader.Read(out m_Position);
+                reader.Read(out m_Tangent);
+                reader.Read(out m_GroupIndex);
+                reader.Read(out m_LaneIndex);
+                reader.Read(out m_Restriction.m_BanLeft);
+                reader.Read(out m_Restriction.m_BanRight);
+                reader.Read(out m_Restriction.m_BanStraight);
+                reader.Read(out m_Restriction.m_BanUTurn);
+            }
+        }
+        else
+        {
+            schemaVersion = 1;
+            reader.Read(out float y);
+            reader.Read(out float z);
+            m_Position = new float3(float1, y, z);
+            reader.Read(out m_Restriction.m_BanLeft);
+            reader.Read(out m_Restriction.m_BanRight);
+            reader.Read(out m_Restriction.m_BanStraight);
+            reader.Read(out m_Restriction.m_BanUTurn);
+        }
         m_Initialised = true;
     }
 }

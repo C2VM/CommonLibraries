@@ -452,7 +452,6 @@ public class PatchedLaneSystem : GameSystemBase
         [ReadOnly]
         public ComponentLookup<BuildingData> m_PrefabBuildingData;
 
-        [ReadOnly]
         public BufferLookup<CustomLaneDirection> m_CustomLaneDirection;
 
         public BufferLookup<ConnectPositionSource> m_ConnectPositionSource;
@@ -5370,17 +5369,6 @@ public class PatchedLaneSystem : GameSystemBase
         private void CreateNodeCarLanes(int jobIndex, ref int nodeLaneIndex, ref Unity.Mathematics.Random random, Entity owner, LaneBuffer laneBuffer, NativeList<MiddleConnection> middleConnections, NativeParallelHashSet<ConnectionKey> createdConnections, NativeList<ConnectPosition> sourceBuffer, NativeList<ConnectPosition> targetBuffer, NativeList<ConnectPosition> allSources, bool isTemp, Temp ownerTemp, int yield)
         {
             ConnectPosition sourcePosition = sourceBuffer[0];
-            ConnectPosition sourcePosition2 = sourceBuffer[sourceBuffer.Length - 1];
-            NetCompositionData netCompositionData = m_PrefabCompositionData[sourcePosition.m_NodeComposition];
-            CompositionFlags.Side num = (((netCompositionData.m_Flags.m_General & CompositionFlags.General.Invert) != 0 != ((sourcePosition.m_LaneData.m_Flags & LaneFlags.Invert) != 0)) ? netCompositionData.m_Flags.m_Left : netCompositionData.m_Flags.m_Right);
-            bool flag = (num & CompositionFlags.Side.ForbidLeftTurn) != 0;
-            bool flag2 = (num & CompositionFlags.Side.ForbidRightTurn) != 0;
-            bool c = (num & CompositionFlags.Side.ForbidStraight) != 0;
-            int num2 = 0;
-            int num3 = 0;
-            int num4 = 0;
-
-            // System.Console.WriteLine($"CreateNodeCarLanes jobIndex {jobIndex} nodeLaneIndex {nodeLaneIndex}");
 
             // for (int i = 0; i < sourceBuffer.Length; i++)
             // {
@@ -5403,44 +5391,14 @@ public class PatchedLaneSystem : GameSystemBase
 
             for (int i = 0; i < sourceBuffer.Length; i++)
             {
-                ConnectPositionSource position = new ConnectPositionSource(sourceBuffer[i].m_Position, nodeLaneIndex);
+                ConnectPositionSource position = new ConnectPositionSource(sourceBuffer[i].m_Position, sourceBuffer[i].m_Tangent, sourceBuffer[i].m_GroupIndex, i);
+                // System.Console.WriteLine($"jobIndex {jobIndex} nodeLaneIndex {nodeLaneIndex} i {i} m_GroupIndex {position.m_GroupIndex}");
                 if (m_ConnectPositionSource.HasBuffer(owner))
                 {
                     DynamicBuffer<ConnectPositionSource> connectPositionSourceBuffer = m_ConnectPositionSource[owner];
-                    bool isExist = false;
-                    for (int j = 0; j < connectPositionSourceBuffer.Length; j++)
-                    {
-                        if (connectPositionSourceBuffer[j].m_Position.Equals(position.m_Position))
-                        {
-                            isExist = true;
-                            break;
-                        }
-                    }
-                    if (!isExist)
+                    if (!ConnectPositionSource.Contains(connectPositionSourceBuffer, position))
                     {
                         m_ConnectPositionSource[owner].Add(position);
-                    }
-                }
-            }
-
-            for (int i = 0; i < targetBuffer.Length; i++)
-            {
-                ConnectPositionTarget position = new ConnectPositionTarget(targetBuffer[i].m_Position);
-                if (m_ConnectPositionTarget.HasBuffer(owner))
-                {
-                    DynamicBuffer<ConnectPositionTarget> connectPositionTargetBuffer = m_ConnectPositionTarget[owner];
-                    bool isExist = false;
-                    for (int j = 0; j < connectPositionTargetBuffer.Length; j++)
-                    {
-                        if (connectPositionTargetBuffer[j].m_Position.Equals(position.m_Position))
-                        {
-                            isExist = true;
-                            break;
-                        }
-                    }
-                    if (!isExist)
-                    {
-                        m_ConnectPositionTarget[owner].Add(position);
                     }
                 }
             }
@@ -5466,13 +5424,19 @@ public class PatchedLaneSystem : GameSystemBase
 
                 for (int i = 0; i < sourceBuffer.Length; i++)
                 {
-                    sourcePosition = sourceBuffer[i];
                     customLaneDirectionArray[i] = default;
                     for (int j = 0; j < customLaneDirectionBuffer.Length; j++)
                     {
-                        if (sourcePosition.m_Position.Equals(customLaneDirectionBuffer[j].m_SourcePosition))
+                        if (customLaneDirectionBuffer[j].Equals(sourceBuffer[i].m_Position, sourceBuffer[i].m_Tangent, sourceBuffer[i].m_GroupIndex, i))
                         {
-                            customLaneDirectionArray[i] = customLaneDirectionBuffer[j];
+                            CustomLaneDirection laneDirection = customLaneDirectionBuffer[j];
+                            customLaneDirectionArray[i] = laneDirection;
+                            // Update CustomLaneDirection position if shifted
+                            laneDirection.m_Position = sourceBuffer[i].m_Position;
+                            laneDirection.m_Tangent = sourceBuffer[i].m_Tangent;
+                            laneDirection.m_GroupIndex = sourceBuffer[i].m_GroupIndex;
+                            laneDirection.m_LaneIndex = i;
+                            customLaneDirectionBuffer[j] = laneDirection;
                             break;
                         }
                     }
@@ -5546,7 +5510,7 @@ public class PatchedLaneSystem : GameSystemBase
                     sourcePosition = sourceBuffer[i];
                     CustomLaneDirection.Restriction restriction = customLaneDirectionArray[i].m_Restriction;
 
-                    // System.Console.WriteLine($"sourcePosition {i} m_Position {sourcePosition.m_Position}");
+                    // System.Console.WriteLine($"sourcePosition {i} m_Position {sourcePosition.m_Position} m_NodeComposition {sourcePosition.m_NodeComposition} m_GroupIndex {sourcePosition.m_GroupIndex} nodeLaneIndex {nodeLaneIndex}");
                     // System.Console.WriteLine($"restriction m_BanLeft {restriction.m_BanLeft} m_BanStraight {restriction.m_BanStraight} m_BanRight {restriction.m_BanRight} m_BanUTurn {restriction.m_BanUTurn}");
                     
                     int currentTargetGroupIndex = -1;
@@ -5719,6 +5683,17 @@ public class PatchedLaneSystem : GameSystemBase
 
                 return;
             }
+
+            sourcePosition = sourceBuffer[0];
+            ConnectPosition sourcePosition2 = sourceBuffer[sourceBuffer.Length - 1];
+            NetCompositionData netCompositionData = m_PrefabCompositionData[sourcePosition.m_NodeComposition];
+            CompositionFlags.Side num = (((netCompositionData.m_Flags.m_General & CompositionFlags.General.Invert) != 0 != ((sourcePosition.m_LaneData.m_Flags & LaneFlags.Invert) != 0)) ? netCompositionData.m_Flags.m_Left : netCompositionData.m_Flags.m_Right);
+            bool flag = (num & CompositionFlags.Side.ForbidLeftTurn) != 0;
+            bool flag2 = (num & CompositionFlags.Side.ForbidRightTurn) != 0;
+            bool c = (num & CompositionFlags.Side.ForbidStraight) != 0;
+            int num2 = 0;
+            int num3 = 0;
+            int num4 = 0;
 
             while (num2 < targetBuffer.Length)
             {
@@ -8462,8 +8437,7 @@ public class PatchedLaneSystem : GameSystemBase
         [ReadOnly]
         public ComponentLookup<BuildingData> __Game_Prefabs_BuildingData_RO_ComponentLookup;
 
-        [ReadOnly]
-        public BufferLookup<CustomLaneDirection> __CustomLaneDirection_RO_BufferLookup;
+        public BufferLookup<CustomLaneDirection> __CustomLaneDirection_RW_BufferLookup;
 
         public BufferLookup<ConnectPositionSource> __ConnectPositionSource_RW_BufferLookup;
 
@@ -8582,7 +8556,7 @@ public class PatchedLaneSystem : GameSystemBase
             __Game_Prefabs_SpawnableObjectData_RO_ComponentLookup = state.GetComponentLookup<SpawnableObjectData>(isReadOnly: true);
             __Game_Prefabs_ObjectGeometryData_RO_ComponentLookup = state.GetComponentLookup<ObjectGeometryData>(isReadOnly: true);
             __Game_Prefabs_BuildingData_RO_ComponentLookup = state.GetComponentLookup<BuildingData>(isReadOnly: true);
-            __CustomLaneDirection_RO_BufferLookup = state.GetBufferLookup<CustomLaneDirection>(isReadOnly: true);
+            __CustomLaneDirection_RW_BufferLookup = state.GetBufferLookup<CustomLaneDirection>(isReadOnly: false);
             __ConnectPositionSource_RW_BufferLookup = state.GetBufferLookup<ConnectPositionSource>(isReadOnly: false);
             __ConnectPositionTarget_RW_BufferLookup = state.GetBufferLookup<ConnectPositionTarget>(isReadOnly: false);
             __Game_Net_ConnectedEdge_RO_BufferLookup = state.GetBufferLookup<ConnectedEdge>(isReadOnly: true);
@@ -8673,7 +8647,7 @@ public class PatchedLaneSystem : GameSystemBase
         __TypeHandle.__Game_Net_ConnectedNode_RO_BufferLookup.Update(ref base.CheckedStateRef);
         __TypeHandle.__Game_Net_ConnectedEdge_RO_BufferLookup.Update(ref base.CheckedStateRef);
         __TypeHandle.__Game_Prefabs_BuildingData_RO_ComponentLookup.Update(ref base.CheckedStateRef);
-        __TypeHandle.__CustomLaneDirection_RO_BufferLookup.Update(ref base.CheckedStateRef);
+        __TypeHandle.__CustomLaneDirection_RW_BufferLookup.Update(ref base.CheckedStateRef);
         __TypeHandle.__ConnectPositionSource_RW_BufferLookup.Update(ref base.CheckedStateRef);
         __TypeHandle.__ConnectPositionTarget_RW_BufferLookup.Update(ref base.CheckedStateRef);
         __TypeHandle.__Game_Prefabs_ObjectGeometryData_RO_ComponentLookup.Update(ref base.CheckedStateRef);
@@ -8794,7 +8768,7 @@ public class PatchedLaneSystem : GameSystemBase
         jobData.m_PrefabSpawnableObjectData = __TypeHandle.__Game_Prefabs_SpawnableObjectData_RO_ComponentLookup;
         jobData.m_PrefabObjectGeometryData = __TypeHandle.__Game_Prefabs_ObjectGeometryData_RO_ComponentLookup;
         jobData.m_PrefabBuildingData = __TypeHandle.__Game_Prefabs_BuildingData_RO_ComponentLookup;
-        jobData.m_CustomLaneDirection = __TypeHandle.__CustomLaneDirection_RO_BufferLookup;
+        jobData.m_CustomLaneDirection = __TypeHandle.__CustomLaneDirection_RW_BufferLookup;
         jobData.m_ConnectPositionSource = __TypeHandle.__ConnectPositionSource_RW_BufferLookup;
         jobData.m_ConnectPositionTarget = __TypeHandle.__ConnectPositionTarget_RW_BufferLookup;
         jobData.m_Edges = __TypeHandle.__Game_Net_ConnectedEdge_RO_BufferLookup;
