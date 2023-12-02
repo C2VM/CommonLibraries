@@ -5391,7 +5391,7 @@ public class PatchedLaneSystem : GameSystemBase
 
             for (int i = 0; i < sourceBuffer.Length; i++)
             {
-                ConnectPositionSource position = new ConnectPositionSource(sourceBuffer[i].m_Position, sourceBuffer[i].m_Tangent, sourceBuffer[i].m_GroupIndex, i);
+                ConnectPositionSource position = new ConnectPositionSource(sourceBuffer[i].m_Position, sourceBuffer[i].m_Tangent, sourceBuffer[i].m_Owner, sourceBuffer[i].m_GroupIndex, i);
                 // System.Console.WriteLine($"jobIndex {jobIndex} nodeLaneIndex {nodeLaneIndex} i {i} m_GroupIndex {position.m_GroupIndex}");
                 if (m_ConnectPositionSource.HasBuffer(owner))
                 {
@@ -5427,17 +5427,45 @@ public class PatchedLaneSystem : GameSystemBase
                     customLaneDirectionArray[i] = default;
                     for (int j = 0; j < customLaneDirectionBuffer.Length; j++)
                     {
-                        if (customLaneDirectionBuffer[j].Equals(sourceBuffer[i].m_Position, sourceBuffer[i].m_Tangent, sourceBuffer[i].m_GroupIndex, i))
+                        if (customLaneDirectionBuffer[j].Equals(sourceBuffer[i].m_Position, sourceBuffer[i].m_Tangent, sourceBuffer[i].m_Owner, sourceBuffer[i].m_GroupIndex, i))
                         {
                             CustomLaneDirection laneDirection = customLaneDirectionBuffer[j];
                             customLaneDirectionArray[i] = laneDirection;
                             // Update CustomLaneDirection position if shifted
                             laneDirection.m_Position = sourceBuffer[i].m_Position;
                             laneDirection.m_Tangent = sourceBuffer[i].m_Tangent;
+                            laneDirection.m_Owner = sourceBuffer[i].m_Owner;
                             laneDirection.m_GroupIndex = sourceBuffer[i].m_GroupIndex;
                             laneDirection.m_LaneIndex = i;
                             customLaneDirectionBuffer[j] = laneDirection;
                             break;
+                        }
+                    }
+                    // Try to match with tangent if no match (e.g. an edge is replaced)
+                    if (customLaneDirectionArray[i].m_Owner == Entity.Null)
+                    {
+                        for (int j = 0; j < customLaneDirectionBuffer.Length; j++)
+                        {
+                            if (customLaneDirectionBuffer[j].LooseEquals(sourceBuffer[i].m_Position, sourceBuffer[i].m_Tangent, sourceBuffer[i].m_Owner, sourceBuffer[i].m_GroupIndex, i))
+                            {
+                                // If the edge still exists, it's not what we want
+                                // Need to find a way to tell if an entity has been deleted
+                                // This doesn't work
+                                // if (m_SubLanes.HasBuffer(sourceBuffer[i].m_Owner))
+                                // {
+                                //     // continue;
+                                // }
+                                CustomLaneDirection laneDirection = customLaneDirectionBuffer[j];
+                                customLaneDirectionArray[i] = laneDirection;
+                                // Update CustomLaneDirection position if shifted
+                                laneDirection.m_Position = sourceBuffer[i].m_Position;
+                                laneDirection.m_Tangent = sourceBuffer[i].m_Tangent;
+                                laneDirection.m_Owner = sourceBuffer[i].m_Owner;
+                                laneDirection.m_GroupIndex = sourceBuffer[i].m_GroupIndex;
+                                laneDirection.m_LaneIndex = i;
+                                customLaneDirectionBuffer[j] = laneDirection;
+                                break;
+                            }
                         }
                     }
                 }
@@ -5510,7 +5538,7 @@ public class PatchedLaneSystem : GameSystemBase
                     sourcePosition = sourceBuffer[i];
                     CustomLaneDirection.Restriction restriction = customLaneDirectionArray[i].m_Restriction;
 
-                    // System.Console.WriteLine($"sourcePosition {i} m_Position {sourcePosition.m_Position} m_NodeComposition {sourcePosition.m_NodeComposition} m_GroupIndex {sourcePosition.m_GroupIndex} nodeLaneIndex {nodeLaneIndex}");
+                    // System.Console.WriteLine($"sourcePosition {i} m_Owner {sourcePosition.m_Owner} m_Position {sourcePosition.m_Position} m_Tangent {sourcePosition.m_Tangent}");
                     // System.Console.WriteLine($"restriction m_BanLeft {restriction.m_BanLeft} m_BanStraight {restriction.m_BanStraight} m_BanRight {restriction.m_BanRight} m_BanUTurn {restriction.m_BanUTurn}");
                     
                     int currentTargetGroupIndex = -1;
@@ -5694,7 +5722,6 @@ public class PatchedLaneSystem : GameSystemBase
             int num2 = 0;
             int num3 = 0;
             int num4 = 0;
-
             while (num2 < targetBuffer.Length)
             {
                 ConnectPosition targetPosition = targetBuffer[num2];

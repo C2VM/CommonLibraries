@@ -9,14 +9,17 @@ public struct ConnectPositionSource : IBufferElementData
 
     public float3 m_Tangent;
 
+    public Entity m_Owner;
+
     public ushort m_GroupIndex;
 
     public int m_LaneIndex;
 
-    public ConnectPositionSource(float3 position, float3 tangent, ushort groupIndex, int laneIndex)
+    public ConnectPositionSource(float3 position, float3 tangent, Entity owner, ushort groupIndex, int laneIndex)
     {
         m_Position = position;
         m_Tangent = tangent;
+        m_Owner = owner;
         m_GroupIndex = groupIndex;
         m_LaneIndex = laneIndex;
     }
@@ -27,7 +30,7 @@ public struct ConnectPositionSource : IBufferElementData
         {
             return true;
         }
-        if (math.dot(math.normalizesafe(m_Tangent.xz), math.normalizesafe(other.m_Tangent.xz)) > 0.99f && m_LaneIndex.Equals(other.m_LaneIndex))
+        if (m_Owner.Equals(other.m_Owner) && m_LaneIndex.Equals(other.m_LaneIndex))
         {
             return true;
         }
@@ -47,6 +50,6 @@ public struct ConnectPositionSource : IBufferElementData
     }
 
     public static explicit operator ConnectPositionSource(CustomLaneDirection lane) {
-        return new ConnectPositionSource(lane.m_Position, lane.m_Tangent, lane.m_GroupIndex, lane.m_LaneIndex);
+        return new ConnectPositionSource(lane.m_Position, lane.m_Tangent, lane.m_Owner, lane.m_GroupIndex, lane.m_LaneIndex);
     }
 }

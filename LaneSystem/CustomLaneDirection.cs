@@ -107,6 +107,8 @@ public struct CustomLaneDirection : IBufferElementData, IQueryTypeParameter, ISe
 
     public float3 m_Tangent;
 
+    public Entity m_Owner;
+
     public ushort m_GroupIndex;
 
     public int m_LaneIndex;
@@ -124,10 +126,11 @@ public struct CustomLaneDirection : IBufferElementData, IQueryTypeParameter, ISe
         return DefaultConfig[laneCount][laneIndex];
     }
 
-    public CustomLaneDirection(float3 position, float3 tangent, ushort groupIndex, int laneIndex, Restriction restriction)
+    public CustomLaneDirection(float3 position, float3 tangent, Entity owner, ushort groupIndex, int laneIndex, Restriction restriction)
     {
         m_Position = position;
         m_Tangent = tangent;
+        m_Owner = owner;
         m_GroupIndex = groupIndex;
         m_LaneIndex = laneIndex;
         m_Restriction = restriction;
@@ -136,32 +139,55 @@ public struct CustomLaneDirection : IBufferElementData, IQueryTypeParameter, ISe
 
     public bool Equals(CustomLaneDirection other)
     {
-        if (this.Equals(other.m_Position, other.m_Tangent, other.m_GroupIndex, other.m_LaneIndex))
+        if (this.Equals(other.m_Position, other.m_Tangent, other.m_Owner, other.m_GroupIndex, other.m_LaneIndex))
         {
             return true;
         }
         return false;
     }
 
-    public bool Equals(float3 position, float3 tangent, ushort groupIndex, int laneIndex)
+    public bool Equals(float3 position, float3 tangent, Entity owner, ushort groupIndex, int laneIndex)
     {
         if (m_Position.Equals(position))
         {
             return true;
         }
-        if (math.dot(math.normalizesafe(m_Tangent.xz), math.normalizesafe(tangent.xz)) > 0.99f && m_LaneIndex.Equals(laneIndex))
+        if (m_Owner.Equals(owner) && m_LaneIndex.Equals(laneIndex))
+        {
+            return true;
+        }
+        // Backward compatibility with schema version 2
+        if (m_Owner.Equals(Entity.Null) && math.dot(math.normalizesafe(m_Tangent.xz), math.normalizesafe(tangent.xz)) > 0.99f && m_LaneIndex.Equals(laneIndex))
         {
             return true;
         }
         return false;
     }
 
-    public static bool Get(DynamicBuffer<CustomLaneDirection> buffer, float3 position, float3 tangent, ushort groupIndex, int laneIndex, out CustomLaneDirection customLaneDirection)
+    // Match with tangent instead of edge entity
+    public bool LooseEquals(float3 position, float3 tangent, Entity owner, ushort groupIndex, int laneIndex)
+    {
+        if (m_Position.Equals(position))
+        {
+            return true;
+        }
+        if (
+            (math.abs(m_Position.x - position.x) + math.abs(m_Position.y - position.y) + math.abs(m_Position.z - position.z)) < 0.1f &&
+            math.dot(math.normalizesafe(m_Tangent.xz), math.normalizesafe(tangent.xz)) > 0.99f &&
+            m_LaneIndex.Equals(laneIndex)
+        )
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public static bool Get(DynamicBuffer<CustomLaneDirection> buffer, float3 position, float3 tangent, Entity owner, ushort groupIndex, int laneIndex, out CustomLaneDirection customLaneDirection)
     {
         customLaneDirection = default;
         for (int i = 0; i < buffer.Length; i++)
         {
-            if (buffer[i].Equals(position, tangent, groupIndex, laneIndex))
+            if (buffer[i].Equals(position, tangent, owner, groupIndex, laneIndex))
             {
                 customLaneDirection = buffer[i];
                 return true;
@@ -173,7 +199,7 @@ public struct CustomLaneDirection : IBufferElementData, IQueryTypeParameter, ISe
     public void Serialize<TWriter>(TWriter writer) where TWriter : IWriter
     {
         writer.Write(float.MaxValue);
-        writer.Write((int) 2); // Schema version
+        writer.Write((int) 3); // Schema version
         writer.Write(m_Position);
         writer.Write(m_Tangent);
         writer.Write(m_GroupIndex);
@@ -182,6 +208,7 @@ public struct CustomLaneDirection : IBufferElementData, IQueryTypeParameter, ISe
         writer.Write(m_Restriction.m_BanRight);
         writer.Write(m_Restriction.m_BanStraight);
         writer.Write(m_Restriction.m_BanUTurn);
+        writer.Write(m_Owner);
     }
 
     public void Deserialize<TReader>(TReader reader) where TReader : IReader
@@ -191,7 +218,7 @@ public struct CustomLaneDirection : IBufferElementData, IQueryTypeParameter, ISe
         if (float1 == float.MaxValue)
         {
             reader.Read(out schemaVersion);
-            if (schemaVersion == 2)
+            if (schemaVersion == 2 || schemaVersion == 3)
             {
                 reader.Read(out m_Position);
                 reader.Read(out m_Tangent);
@@ -201,6 +228,11 @@ public struct CustomLaneDirection : IBufferElementData, IQueryTypeParameter, ISe
                 reader.Read(out m_Restriction.m_BanRight);
                 reader.Read(out m_Restriction.m_BanStraight);
                 reader.Read(out m_Restriction.m_BanUTurn);
+                m_Owner = Entity.Null;
+                if (schemaVersion == 3)
+                {
+                    reader.Read(out m_Owner);
+                }
             }
         }
         else
