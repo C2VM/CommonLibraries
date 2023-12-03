@@ -5402,18 +5402,9 @@ public class PatchedLaneSystem : GameSystemBase
                 }
             }
 
-            if ((!isTemp && m_CustomLaneDirection.HasBuffer(owner)) || (isTemp && m_CustomLaneDirection.HasBuffer(ownerTemp.m_Original)))
+            if (!isTemp && m_CustomLaneDirection.HasBuffer(owner))
             {
-                DynamicBuffer<CustomLaneDirection> customLaneDirectionBuffer;
-
-                if (isTemp)
-                {
-                    customLaneDirectionBuffer = m_CustomLaneDirection[ownerTemp.m_Original];
-                }
-                else
-                {
-                    customLaneDirectionBuffer = m_CustomLaneDirection[owner];
-                }
+                DynamicBuffer<CustomLaneDirection> customLaneDirectionBuffer = m_CustomLaneDirection[owner];
 
                 bool[] targetTaken = new bool[targetBuffer.Length];
                 bool fulfilledKerbSideTurn = false;
