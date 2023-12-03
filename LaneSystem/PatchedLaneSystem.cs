@@ -5388,14 +5388,13 @@ public class PatchedLaneSystem : GameSystemBase
             //     }
             //     break;
             // }
-
-            for (int i = 0; i < sourceBuffer.Length; i++)
+            
+            if (m_ConnectPositionSource.HasBuffer(owner))
             {
-                ConnectPositionSource position = new ConnectPositionSource(sourceBuffer[i].m_Position, sourceBuffer[i].m_Tangent, sourceBuffer[i].m_Owner, sourceBuffer[i].m_GroupIndex, i);
-                // System.Console.WriteLine($"jobIndex {jobIndex} nodeLaneIndex {nodeLaneIndex} i {i} m_GroupIndex {position.m_GroupIndex}");
-                if (m_ConnectPositionSource.HasBuffer(owner))
+                DynamicBuffer<ConnectPositionSource> connectPositionSourceBuffer = m_ConnectPositionSource[owner];
+                for (int i = 0; i < sourceBuffer.Length; i++)
                 {
-                    DynamicBuffer<ConnectPositionSource> connectPositionSourceBuffer = m_ConnectPositionSource[owner];
+                    ConnectPositionSource position = new ConnectPositionSource(sourceBuffer[i].m_Position, sourceBuffer[i].m_Tangent, sourceBuffer[i].m_Owner, sourceBuffer[i].m_GroupIndex, i);
                     if (!ConnectPositionSource.Contains(connectPositionSourceBuffer, position))
                     {
                         m_ConnectPositionSource[owner].Add(position);
@@ -5403,9 +5402,18 @@ public class PatchedLaneSystem : GameSystemBase
                 }
             }
 
-            if (m_CustomLaneDirection.HasBuffer(owner))
+            if ((!isTemp && m_CustomLaneDirection.HasBuffer(owner)) || (isTemp && m_CustomLaneDirection.HasBuffer(ownerTemp.m_Original)))
             {
-                DynamicBuffer<CustomLaneDirection> customLaneDirectionBuffer = m_CustomLaneDirection[owner];
+                DynamicBuffer<CustomLaneDirection> customLaneDirectionBuffer;
+
+                if (isTemp)
+                {
+                    customLaneDirectionBuffer = m_CustomLaneDirection[ownerTemp.m_Original];
+                }
+                else
+                {
+                    customLaneDirectionBuffer = m_CustomLaneDirection[owner];
+                }
 
                 bool[] targetTaken = new bool[targetBuffer.Length];
                 bool fulfilledKerbSideTurn = false;

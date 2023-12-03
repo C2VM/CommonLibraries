@@ -172,7 +172,7 @@ public struct CustomLaneDirection : IBufferElementData, IQueryTypeParameter, ISe
             return true;
         }
         if (
-            (math.abs(m_Position.x - position.x) + math.abs(m_Position.y - position.y) + math.abs(m_Position.z - position.z)) < 1.0f &&
+            (math.abs(m_Position.x - position.x) + math.abs(m_Position.y - position.y) + math.abs(m_Position.z - position.z)) < 3.0f &&
             math.dot(math.normalizesafe(m_Tangent.xz), math.normalizesafe(tangent.xz)) > 0.99f &&
             m_LaneIndex.Equals(laneIndex)
         )
