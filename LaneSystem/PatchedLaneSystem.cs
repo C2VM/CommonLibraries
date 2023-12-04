@@ -5402,9 +5402,18 @@ public class PatchedLaneSystem : GameSystemBase
                 }
             }
 
-            if (!isTemp && m_CustomLaneDirection.HasBuffer(owner))
+            if (!isTemp && m_CustomLaneDirection.HasBuffer(owner) || isTemp && m_CustomLaneDirection.HasBuffer(ownerTemp.m_Original))
             {
-                DynamicBuffer<CustomLaneDirection> customLaneDirectionBuffer = m_CustomLaneDirection[owner];
+                DynamicBuffer<CustomLaneDirection> customLaneDirectionBuffer;
+
+                if (!isTemp)
+                {
+                    customLaneDirectionBuffer = m_CustomLaneDirection[owner];
+                }
+                else
+                {
+                    customLaneDirectionBuffer = m_CustomLaneDirection[ownerTemp.m_Original];
+                }
 
                 bool[] targetTaken = new bool[targetBuffer.Length];
                 bool fulfilledKerbSideTurn = false;
@@ -5431,12 +5440,15 @@ public class PatchedLaneSystem : GameSystemBase
                             CustomLaneDirection laneDirection = customLaneDirectionBuffer[j];
                             customLaneDirectionArray[i] = laneDirection;
                             // Update CustomLaneDirection position if shifted
-                            laneDirection.m_Position = sourceBuffer[i].m_Position;
-                            laneDirection.m_Tangent = sourceBuffer[i].m_Tangent;
-                            laneDirection.m_Owner = sourceBuffer[i].m_Owner;
-                            laneDirection.m_GroupIndex = sourceBuffer[i].m_GroupIndex;
-                            laneDirection.m_LaneIndex = i;
-                            customLaneDirectionBuffer[j] = laneDirection;
+                            if (!isTemp)
+                            {
+                                laneDirection.m_Position = sourceBuffer[i].m_Position;
+                                laneDirection.m_Tangent = sourceBuffer[i].m_Tangent;
+                                laneDirection.m_Owner = sourceBuffer[i].m_Owner;
+                                laneDirection.m_GroupIndex = sourceBuffer[i].m_GroupIndex;
+                                laneDirection.m_LaneIndex = i;
+                                customLaneDirectionBuffer[j] = laneDirection;
+                            }
                             break;
                         }
                     }
@@ -5457,12 +5469,15 @@ public class PatchedLaneSystem : GameSystemBase
                                 CustomLaneDirection laneDirection = customLaneDirectionBuffer[j];
                                 customLaneDirectionArray[i] = laneDirection;
                                 // Update CustomLaneDirection position if shifted
-                                laneDirection.m_Position = sourceBuffer[i].m_Position;
-                                laneDirection.m_Tangent = sourceBuffer[i].m_Tangent;
-                                laneDirection.m_Owner = sourceBuffer[i].m_Owner;
-                                laneDirection.m_GroupIndex = sourceBuffer[i].m_GroupIndex;
-                                laneDirection.m_LaneIndex = i;
-                                customLaneDirectionBuffer[j] = laneDirection;
+                                if (!isTemp)
+                                {
+                                    laneDirection.m_Position = sourceBuffer[i].m_Position;
+                                    laneDirection.m_Tangent = sourceBuffer[i].m_Tangent;
+                                    laneDirection.m_Owner = sourceBuffer[i].m_Owner;
+                                    laneDirection.m_GroupIndex = sourceBuffer[i].m_GroupIndex;
+                                    laneDirection.m_LaneIndex = i;
+                                    customLaneDirectionBuffer[j] = laneDirection;
+                                }
                                 break;
                             }
                         }
