@@ -4,7 +4,7 @@
     <TargetFramework>net46</TargetFramework>
     <AssemblyName>C2VM.CommonLibraries.LaneSystem</AssemblyName>
     <Description>C2VM.CommonLibraries.LaneSystem</Description>
-    <Version>0.0.3</Version>
+    <Version>0.0.4</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <RestoreAdditionalProjectSources>
@@ -16,15 +16,15 @@
     <IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(BepInExVersion)'=='6'">
+  <PropertyGroup Condition="'$(BepInExVersion)' == '6'">
     <DefineConstants>$(DefineConstants);BEPINEX6</DefineConstants>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(BepInExVersion)'=='5'">
+  <ItemGroup Condition="'$(BepInExVersion)' == '5' Or '$(BepInExVersion)' == ''">
     <PackageReference Include="BepInEx.Core" Version="5.*" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(BepInExVersion)'=='6'">
+  <ItemGroup Condition="'$(BepInExVersion)' == '6'">
     <PackageReference Include="BepInEx.Unity.Mono" Version="6.0.0-be.*" IncludeAssets="compile" />
   </ItemGroup>
 
@@ -38,4 +38,5 @@
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
   </ItemGroup>
+
 </Project>

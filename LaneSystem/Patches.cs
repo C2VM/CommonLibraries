@@ -9,8 +9,7 @@ class Patches
     [HarmonyPrefix]
     static bool OnCreate(Game.Net.LaneSystem __instance)
     {
-        __instance.World.GetOrCreateSystemManaged<Game.Net.PatchedLaneSystem>();
-        __instance.World.GetOrCreateSystemManaged<Game.UpdateSystem>().UpdateAt<Game.Net.PatchedLaneSystem>(Game.SystemUpdatePhase.GameSimulation);
+        __instance.World.GetOrCreateSystemManaged<Game.Net.C2VMPatchedLaneSystem>();
         return true;
     }
 
@@ -25,7 +24,7 @@ class Patches
     [HarmonyPrefix]
     static bool OnUpdate(Game.Net.LaneSystem __instance)
     {
-        __instance.World.GetOrCreateSystemManaged<Game.Net.PatchedLaneSystem>().Update();
+        __instance.World.GetOrCreateSystemManaged<Game.Net.C2VMPatchedLaneSystem>().Update();
         return false;
     }
 }

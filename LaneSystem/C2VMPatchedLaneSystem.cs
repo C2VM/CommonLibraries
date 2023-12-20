@@ -33,7 +33,7 @@ using UnityEngine.Scripting;
 namespace Game.Net;
 
 [CompilerGenerated]
-public class PatchedLaneSystem : GameSystemBase
+public class C2VMPatchedLaneSystem : GameSystemBase
 {
     private struct LaneKey : IEquatable<LaneKey>
     {
@@ -8857,7 +8857,7 @@ public class PatchedLaneSystem : GameSystemBase
     }
 
     [Preserve]
-    public PatchedLaneSystem()
+    public C2VMPatchedLaneSystem()
     {
     }
 }
