@@ -32,8 +32,21 @@
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" />
 	  <PackageReference Include="UnityEngine.Modules" Version="2022.3.7" IncludeAssets="compile" />
-    <Reference Include="../../Managed/*.dll" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <ReferencePath Condition="Exists('C:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II/Cities2_Data/Managed/')">C:/Program Files (x86)/Steam/steamapps/common/Cities Skylines II/Cities2_Data/Managed/</ReferencePath>
+    <ReferencePath Condition="Exists('../../Managed/')">../../Managed/</ReferencePath>
+    <ReferencePath Condition="Exists('../Managed/')">../Managed/</ReferencePath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="$(ReferencePath)*.dll" Exclude="$(ReferencePath)System.*.dll" />
+  </ItemGroup>
+
+  <Target Name="Message" BeforeTargets="CoreCompile">
+    <Message Text="ReferencePath: $(ReferencePath)" Importance="high" />
+  </Target>
 
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
