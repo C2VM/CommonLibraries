@@ -5395,6 +5395,33 @@ public class C2VMPatchedLaneSystem : GameSystemBase
                 for (int i = 0; i < sourceBuffer.Length; i++)
                 {
                     ConnectPositionSource position = new ConnectPositionSource(sourceBuffer[i].m_Position, sourceBuffer[i].m_Tangent, sourceBuffer[i].m_Owner, sourceBuffer[i].m_GroupIndex, i);
+                    for (int j = 0; j < targetBuffer.Length; j++)
+                    {
+                        if (j > 0 && targetBuffer[j].m_Owner.Equals(targetBuffer[j-1].m_Owner))
+                        {
+                            continue;
+                        }
+
+                        ConnectPosition targetPosition = targetBuffer[j];
+                        bool isTurn = IsTurn(sourcePosition, targetPosition, out bool isRight, out bool isGentle, out bool isUTurn);
+                        bool isLeft = isTurn && !isRight;
+                        isRight = isTurn && isRight;
+
+                        if (isLeft && !isUTurn)
+                        {
+                            position.m_HasLeftTurnEdge = true;
+                        }
+
+                        if (isRight && !isUTurn)
+                        {
+                            position.m_HasRightTurnEdge = true;
+                        }
+
+                        if (!isTurn)
+                        {
+                            position.m_HasStraightEdge = true;
+                        }
+                    }
                     if (!ConnectPositionSource.Contains(connectPositionSourceBuffer, position))
                     {
                         m_ConnectPositionSource[owner].Add(position);
@@ -5419,14 +5446,14 @@ public class C2VMPatchedLaneSystem : GameSystemBase
                 bool fulfilledKerbSideTurn = false;
                 bool fulfilledCentreSideTurn = false;
                 bool fulfilledStraight = false;
+                bool hasKerbSideTurnTargetEdge = false;
+                bool hasCentreSideTurnTargetEdge = false;
                 int kerbSideTurnConnectionNeeded = 0;
                 int centreSideTurnConnectionNeeded = 0;
                 int straightConnectionNeeded = 0;
                 int leftTurnConnectionNeeded = 0;
                 int rightTurnConnectionNeeded = 0;
                 int uTurnConnectionNeeded = 0;
-                int kerbSideTurnTargetCount = 0;
-                int centreSideTurnTargetCount = 0;
 
                 CustomLaneDirection[] customLaneDirectionArray = new CustomLaneDirection[sourceBuffer.Length];
 
@@ -5527,6 +5554,11 @@ public class C2VMPatchedLaneSystem : GameSystemBase
                     sourcePosition = sourceBuffer[0];
                     for (int i = 0; i < targetBuffer.Length; i++)
                     {
+                        if (i > 0 && targetBuffer[i].m_Owner.Equals(targetBuffer[i-1].m_Owner))
+                        {
+                            continue;
+                        }
+
                         ConnectPosition targetPosition = targetBuffer[i];
                         bool isTurn = IsTurn(sourcePosition, targetPosition, out bool isRight, out bool isGentle, out bool isUTurn);
                         bool isLeft = isTurn && !isRight;
@@ -5537,12 +5569,12 @@ public class C2VMPatchedLaneSystem : GameSystemBase
 
                         if (isKerbSideTurn && !isUTurn)
                         {
-                            kerbSideTurnTargetCount++;
+                            hasKerbSideTurnTargetEdge = true;
                         }
 
                         if (isCentreSideTurn && !isUTurn)
                         {
-                            centreSideTurnTargetCount++;
+                            hasCentreSideTurnTargetEdge = true;
                         }
                     }
                 }
@@ -5621,19 +5653,19 @@ public class C2VMPatchedLaneSystem : GameSystemBase
                         }
 
                         // Try to centre the connecting lanes
-                        if (kerbSideTurnTargetCount > 0 && centreSideTurnTargetCount > 0 && !isTurn && j < currentTargetGroupEnd + 1 - straightConnectionNeeded - ((currentTargetGroupEnd + 1 - currentTargetGroupStart - straightConnectionNeeded) / 2))
+                        if (hasKerbSideTurnTargetEdge && hasCentreSideTurnTargetEdge && !isTurn && j < currentTargetGroupEnd + 1 - straightConnectionNeeded - ((currentTargetGroupEnd + 1 - currentTargetGroupStart - straightConnectionNeeded) / 2))
                         {
                             continue;
                         }
 
                         // Three way junction centre ahead lanes
-                        if (m_LeftHandTraffic && kerbSideTurnTargetCount > 0 && centreSideTurnTargetCount == 0 && !isTurn && j < currentTargetGroupEnd + 1 - straightConnectionNeeded)
+                        if (m_LeftHandTraffic && hasKerbSideTurnTargetEdge && !hasCentreSideTurnTargetEdge && !isTurn && j < currentTargetGroupEnd + 1 - straightConnectionNeeded)
                         {
                             continue;
                         }
 
                         // Three way junction RHT align right
-                        if (!m_LeftHandTraffic && kerbSideTurnTargetCount == 0 && !isTurn && j < currentTargetGroupEnd + 1 - straightConnectionNeeded)
+                        if (!m_LeftHandTraffic && !hasKerbSideTurnTargetEdge && !isTurn && j < currentTargetGroupEnd + 1 - straightConnectionNeeded)
                         {
                             continue;
                         }

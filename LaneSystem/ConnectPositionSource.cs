@@ -15,6 +15,12 @@ public struct ConnectPositionSource : IBufferElementData
 
     public int m_LaneIndex;
 
+    public bool m_HasLeftTurnEdge;
+
+    public bool m_HasRightTurnEdge;
+
+    public bool m_HasStraightEdge;
+
     public ConnectPositionSource(float3 position, float3 tangent, Entity owner, ushort groupIndex, int laneIndex)
     {
         m_Position = position;
