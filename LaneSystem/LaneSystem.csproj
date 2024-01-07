@@ -4,7 +4,7 @@
     <TargetFramework>net46</TargetFramework>
     <AssemblyName>C2VM.CommonLibraries.LaneSystem</AssemblyName>
     <Description>C2VM.CommonLibraries.LaneSystem</Description>
-    <Version>0.0.5</Version>
+    <Version>0.0.6</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <RestoreAdditionalProjectSources>
@@ -51,5 +51,13 @@
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
   </ItemGroup>
+
+  <PropertyGroup Condition="'$(Verbosity)' == 'Verbose'">
+    <DefineConstants>$(DefineConstants);VERBOSITY_VERBOSE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Verbosity)' == 'Debug'">
+    <DefineConstants>$(DefineConstants);VERBOSITY_VERBOSE;VERBOSITY_DEBUG</DefineConstants>
+  </PropertyGroup>
 
 </Project>
