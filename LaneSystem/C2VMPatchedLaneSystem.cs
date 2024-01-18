@@ -5653,9 +5653,17 @@ public class C2VMPatchedLaneSystem : GameSystemBase
                         }
 
                         // Try to centre the connecting lanes
-                        if (hasKerbSideTurnTargetEdge && hasCentreSideTurnTargetEdge && !isTurn && j < currentTargetGroupEnd + 1 - straightConnectionNeeded - ((currentTargetGroupEnd + 1 - currentTargetGroupStart - straightConnectionNeeded) / 2))
+                        if (hasKerbSideTurnTargetEdge && hasCentreSideTurnTargetEdge && !isTurn)
                         {
-                            continue;
+                            int targetEdgeWidth = currentTargetGroupEnd + 1 - currentTargetGroupStart;
+                            if (m_LeftHandTraffic && j < currentTargetGroupEnd + 1 - straightConnectionNeeded - ((targetEdgeWidth - straightConnectionNeeded) / 2))
+                            {
+                                continue;
+                            }
+                            if (!m_LeftHandTraffic && j < currentTargetGroupEnd + 1 - targetEdgeWidth + ((targetEdgeWidth - straightConnectionNeeded) / 2))
+                            {
+                                continue;
+                            }
                         }
 
                         // Three way junction centre ahead lanes
