@@ -5656,30 +5656,30 @@ public class C2VMPatchedLaneSystem : GameSystemBase
                         if (hasKerbSideTurnTargetEdge && hasCentreSideTurnTargetEdge && !isTurn)
                         {
                             int targetEdgeWidth = currentTargetGroupEnd + 1 - currentTargetGroupStart;
-                            if (m_LeftHandTraffic && j < currentTargetGroupEnd + 1 - straightConnectionNeeded - ((targetEdgeWidth - straightConnectionNeeded) / 2))
+                            if (m_LeftHandTraffic && j < currentTargetGroupEnd + 1 - math.max(1, straightConnectionNeeded) - ((targetEdgeWidth - math.max(1, straightConnectionNeeded)) / 2))
                             {
                                 continue;
                             }
-                            if (!m_LeftHandTraffic && j < currentTargetGroupEnd + 1 - targetEdgeWidth + ((targetEdgeWidth - straightConnectionNeeded) / 2))
+                            if (!m_LeftHandTraffic && j < currentTargetGroupEnd + 1 - targetEdgeWidth + ((targetEdgeWidth - math.max(1, straightConnectionNeeded)) / 2))
                             {
                                 continue;
                             }
                         }
 
                         // Three way junction centre ahead lanes
-                        if (m_LeftHandTraffic && hasKerbSideTurnTargetEdge && !hasCentreSideTurnTargetEdge && !isTurn && j < currentTargetGroupEnd + 1 - straightConnectionNeeded)
+                        if (m_LeftHandTraffic && hasKerbSideTurnTargetEdge && !hasCentreSideTurnTargetEdge && !isTurn && j < currentTargetGroupEnd + 1 - math.max(1, straightConnectionNeeded))
                         {
                             continue;
                         }
 
                         // Three way junction RHT align right
-                        if (!m_LeftHandTraffic && !hasKerbSideTurnTargetEdge && !isTurn && j < currentTargetGroupEnd + 1 - straightConnectionNeeded)
+                        if (!m_LeftHandTraffic && !hasKerbSideTurnTargetEdge && !isTurn && j < currentTargetGroupEnd + 1 - math.max(1, straightConnectionNeeded))
                         {
                             continue;
                         }
 
                         // Try to align the connecting lanes to the right
-                        if (isRight && j < currentTargetGroupEnd + 1 - math.max(1, rightTurnConnectionNeeded))
+                        if (isRight && !isUTurn && j < currentTargetGroupEnd + 1 - math.max(1, rightTurnConnectionNeeded))
                         {
                             continue;
                         }
