@@ -5620,7 +5620,7 @@ public class C2VMPatchedLaneSystem : GameSystemBase
                         bool isKerbSideLane = (i == 0 && m_LeftHandTraffic) || (i == sourceBuffer.Length - 1 && !m_LeftHandTraffic);
                         bool isCentreSideLane = (i == 0 && !m_LeftHandTraffic) || (i == sourceBuffer.Length - 1 && m_LeftHandTraffic);
 
-                        bool isTurn = IsTurn(sourcePosition, targetPosition, out bool isRight, out bool isGentle, out bool isUTurn);
+                        bool isTurn = IsTurn(sourceBuffer[sourceBuffer.Length / 2], targetBuffer[currentTargetGroupStart + (currentTargetGroupEnd - currentTargetGroupStart + 1) / 2], out bool isRight, out bool isGentle, out bool isUTurn);
                         bool isLeft = isTurn && !isRight;
                         isRight = isTurn && isRight;
 
@@ -5750,6 +5750,83 @@ public class C2VMPatchedLaneSystem : GameSystemBase
                             fulfilledCentreSideTurn = fulfilledCentreSideTurn || isCentreSideTurn;
                             fulfilledStraight = fulfilledStraight || !isTurn;
                             // System.Console.WriteLine($"connected i {i} j {j}");
+                        }
+                        if (isUnsafe)
+                        {
+                            targetPosition.m_UnsafeCount++;
+                        }
+                        if (isForbidden)
+                        {
+                            targetPosition.m_ForbiddenCount++;
+                        }
+                        targetBuffer[j] = targetPosition;
+                    }
+                }
+
+                // Add unsafe connection if no connection has been made
+                for (int i = 0; i < sourceBuffer.Length; i++)
+                {
+                    sourcePosition = sourceBuffer[i];
+
+                    int currentTargetGroupIndex = -1;
+                    int currentTargetGroupEnd = -1;
+                    int currentTargetGroupConnectionCount = 0;
+
+                    for (int j = 0; j < targetBuffer.Length; j++)
+                    {
+                        ConnectPosition targetPosition = targetBuffer[j];
+
+                        if (currentTargetGroupIndex != targetPosition.m_GroupIndex)
+                        {
+                            currentTargetGroupIndex = targetPosition.m_GroupIndex;
+                            currentTargetGroupConnectionCount = 0;
+                            for (int k = j; k < targetBuffer.Length; k++)
+                            {
+                                if (targetBuffer[k].m_GroupIndex != targetBuffer[j].m_GroupIndex)
+                                {
+                                    currentTargetGroupEnd = k - 1;
+                                    break;
+                                }
+
+                                for (int l = 0; l < sourceBuffer.Length; l++)
+                                {
+                                    if (createdConnections.Contains(new ConnectionKey(sourceBuffer[l], targetBuffer[k])))
+                                    {
+                                        currentTargetGroupConnectionCount++;
+                                    }
+                                }
+
+                                if (k == targetBuffer.Length - 1)
+                                {
+                                    currentTargetGroupEnd = k;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (currentTargetGroupConnectionCount > 0)
+                        {
+                            j = currentTargetGroupEnd;
+                            continue;
+                        }
+
+                        bool isTurn = IsTurn(sourcePosition, targetPosition, out bool isRight, out bool isGentle, out bool isUTurn);
+                        isRight = isTurn && isRight;
+
+                        bool isForbidden = true;
+                        bool isUnsafe = true;
+
+                        uint group = (uint)(sourcePosition.m_GroupIndex | (targetPosition.m_GroupIndex << 16));
+                        ushort laneIndex = (ushort) i;
+                        bool isLeftLimit = i == 0 && j == 0;
+                        bool isRightLimit = (i == sourceBuffer.Length - 1) & (j == targetBuffer.Length - 1);
+                        bool isMergeLeft = false;
+                        bool isMergeRight = false;
+                        float curviness = -1f;
+                        if (CreateNodeLane(jobIndex, ref nodeLaneIndex, ref random, ref curviness, owner, laneBuffer, middleConnections, sourcePosition, targetPosition, group, laneIndex, isUnsafe, isForbidden, isTemp, trackOnly: false, yield, ownerTemp, isTurn, isRight, isGentle, isUTurn, isRoundabout: false, isLeftLimit, isRightLimit, isMergeLeft, isMergeRight, fixedTangents: false))
+                        {
+                            createdConnections.Add(new ConnectionKey(sourcePosition, targetPosition));
+                            currentTargetGroupConnectionCount++;
                         }
                         if (isUnsafe)
                         {
