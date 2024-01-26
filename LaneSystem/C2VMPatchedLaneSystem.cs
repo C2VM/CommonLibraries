@@ -5620,7 +5620,7 @@ public class C2VMPatchedLaneSystem : GameSystemBase
                         bool isKerbSideLane = (i == 0 && m_LeftHandTraffic) || (i == sourceBuffer.Length - 1 && !m_LeftHandTraffic);
                         bool isCentreSideLane = (i == 0 && !m_LeftHandTraffic) || (i == sourceBuffer.Length - 1 && m_LeftHandTraffic);
 
-                        bool isTurn = IsTurn(sourceBuffer[sourceBuffer.Length / 2], targetBuffer[currentTargetGroupStart + (currentTargetGroupEnd - currentTargetGroupStart + 1) / 2], out bool isRight, out bool isGentle, out bool isUTurn);
+                        bool isTurn = IsTurn(sourcePosition, targetPosition, out bool isRight, out bool isGentle, out bool isUTurn);
                         bool isLeft = isTurn && !isRight;
                         isRight = isTurn && isRight;
 
