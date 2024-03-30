@@ -452,6 +452,9 @@ public class C2VMPatchedLaneSystem : GameSystemBase
         [ReadOnly]
         public ComponentLookup<BuildingData> m_PrefabBuildingData;
 
+        [ReadOnly]
+        public ComponentLookup<PrefabData> m_PrefabData;
+
         public BufferLookup<CustomLaneDirection> m_CustomLaneDirection;
 
         public BufferLookup<ConnectPositionSource> m_ConnectPositionSource;
@@ -4000,6 +4003,7 @@ public class C2VMPatchedLaneSystem : GameSystemBase
                 }
             }
 
+            bool flag3 = m_PrefabData.IsComponentEnabled(component2.m_Prefab);
             if (flag2)
             {
                 laneBuffer.m_OldLanes.Remove(laneKey);
@@ -4011,34 +4015,37 @@ public class C2VMPatchedLaneSystem : GameSystemBase
                     m_CommandBuffer.AddComponent(jobIndex, item, componentData);
                 }
 
-                if ((laneFlags & LaneFlags.Road) != 0)
+                if (flag3)
                 {
-                    m_CommandBuffer.SetComponent(jobIndex, item, component5);
-                }
+                    if ((laneFlags & LaneFlags.Road) != 0)
+                    {
+                        m_CommandBuffer.SetComponent(jobIndex, item, component5);
+                    }
 
-                if ((laneFlags & LaneFlags.Track) != 0)
-                {
-                    m_CommandBuffer.SetComponent(jobIndex, item, component6);
-                }
+                    if ((laneFlags & LaneFlags.Track) != 0)
+                    {
+                        m_CommandBuffer.SetComponent(jobIndex, item, component6);
+                    }
 
-                if ((laneFlags & LaneFlags.Parking) != 0)
-                {
-                    m_CommandBuffer.SetComponent(jobIndex, item, component7);
-                }
+                    if ((laneFlags & LaneFlags.Parking) != 0)
+                    {
+                        m_CommandBuffer.SetComponent(jobIndex, item, component7);
+                    }
 
-                if ((laneFlags & LaneFlags.Pedestrian) != 0)
-                {
-                    m_CommandBuffer.SetComponent(jobIndex, item, component8);
-                }
+                    if ((laneFlags & LaneFlags.Pedestrian) != 0)
+                    {
+                        m_CommandBuffer.SetComponent(jobIndex, item, component8);
+                    }
 
-                if ((laneFlags & LaneFlags.Utility) != 0)
-                {
-                    m_CommandBuffer.SetComponent(jobIndex, item, component3);
-                }
+                    if ((laneFlags & LaneFlags.Utility) != 0)
+                    {
+                        m_CommandBuffer.SetComponent(jobIndex, item, component3);
+                    }
 
-                if (flag)
-                {
-                    m_CommandBuffer.AddComponent(jobIndex, item, component4);
+                    if (flag)
+                    {
+                        m_CommandBuffer.AddComponent(jobIndex, item, component4);
+                    }
                 }
 
                 if (isTemp)
@@ -4102,34 +4109,37 @@ public class C2VMPatchedLaneSystem : GameSystemBase
                 m_CommandBuffer.SetComponent(jobIndex, e, componentData);
             }
 
-            if ((laneFlags & LaneFlags.Road) != 0)
+            if (flag3)
             {
-                m_CommandBuffer.SetComponent(jobIndex, e, component5);
-            }
+                if ((laneFlags & LaneFlags.Road) != 0)
+                {
+                    m_CommandBuffer.SetComponent(jobIndex, e, component5);
+                }
 
-            if ((laneFlags & LaneFlags.Track) != 0)
-            {
-                m_CommandBuffer.SetComponent(jobIndex, e, component6);
-            }
+                if ((laneFlags & LaneFlags.Track) != 0)
+                {
+                    m_CommandBuffer.SetComponent(jobIndex, e, component6);
+                }
 
-            if ((laneFlags & LaneFlags.Parking) != 0)
-            {
-                m_CommandBuffer.SetComponent(jobIndex, e, component7);
-            }
+                if ((laneFlags & LaneFlags.Parking) != 0)
+                {
+                    m_CommandBuffer.SetComponent(jobIndex, e, component7);
+                }
 
-            if ((laneFlags & LaneFlags.Pedestrian) != 0)
-            {
-                m_CommandBuffer.SetComponent(jobIndex, e, component8);
-            }
+                if ((laneFlags & LaneFlags.Pedestrian) != 0)
+                {
+                    m_CommandBuffer.SetComponent(jobIndex, e, component8);
+                }
 
-            if ((laneFlags & LaneFlags.Utility) != 0)
-            {
-                m_CommandBuffer.SetComponent(jobIndex, e, component3);
-            }
+                if ((laneFlags & LaneFlags.Utility) != 0)
+                {
+                    m_CommandBuffer.SetComponent(jobIndex, e, component3);
+                }
 
-            if (flag)
-            {
-                m_CommandBuffer.SetComponent(jobIndex, e, component4);
+                if (flag)
+                {
+                    m_CommandBuffer.SetComponent(jobIndex, e, component4);
+                }
             }
 
             if ((laneFlags & LaneFlags.Master) != 0)
@@ -8595,6 +8605,9 @@ public class C2VMPatchedLaneSystem : GameSystemBase
         [ReadOnly]
         public ComponentLookup<BuildingData> __Game_Prefabs_BuildingData_RO_ComponentLookup;
 
+        [ReadOnly]
+        public ComponentLookup<PrefabData> __Game_Prefabs_PrefabData_RO_ComponentLookup;
+
         public BufferLookup<CustomLaneDirection> __CustomLaneDirection_RW_BufferLookup;
 
         public BufferLookup<ConnectPositionSource> __ConnectPositionSource_RW_BufferLookup;
@@ -8714,6 +8727,7 @@ public class C2VMPatchedLaneSystem : GameSystemBase
             __Game_Prefabs_SpawnableObjectData_RO_ComponentLookup = state.GetComponentLookup<SpawnableObjectData>(isReadOnly: true);
             __Game_Prefabs_ObjectGeometryData_RO_ComponentLookup = state.GetComponentLookup<ObjectGeometryData>(isReadOnly: true);
             __Game_Prefabs_BuildingData_RO_ComponentLookup = state.GetComponentLookup<BuildingData>(isReadOnly: true);
+            __Game_Prefabs_PrefabData_RO_ComponentLookup = state.GetComponentLookup<PrefabData>(isReadOnly: true);
             __CustomLaneDirection_RW_BufferLookup = state.GetBufferLookup<CustomLaneDirection>(isReadOnly: false);
             __ConnectPositionSource_RW_BufferLookup = state.GetBufferLookup<ConnectPositionSource>(isReadOnly: false);
             __ConnectPositionTarget_RW_BufferLookup = state.GetBufferLookup<ConnectPositionTarget>(isReadOnly: false);
@@ -8804,6 +8818,7 @@ public class C2VMPatchedLaneSystem : GameSystemBase
         __TypeHandle.__Game_Net_SubLane_RO_BufferLookup.Update(ref base.CheckedStateRef);
         __TypeHandle.__Game_Net_ConnectedNode_RO_BufferLookup.Update(ref base.CheckedStateRef);
         __TypeHandle.__Game_Net_ConnectedEdge_RO_BufferLookup.Update(ref base.CheckedStateRef);
+        __TypeHandle.__Game_Prefabs_PrefabData_RO_ComponentLookup.Update(ref base.CheckedStateRef);
         __TypeHandle.__Game_Prefabs_BuildingData_RO_ComponentLookup.Update(ref base.CheckedStateRef);
         __TypeHandle.__CustomLaneDirection_RW_BufferLookup.Update(ref base.CheckedStateRef);
         __TypeHandle.__ConnectPositionSource_RW_BufferLookup.Update(ref base.CheckedStateRef);
@@ -8926,6 +8941,7 @@ public class C2VMPatchedLaneSystem : GameSystemBase
         jobData.m_PrefabSpawnableObjectData = __TypeHandle.__Game_Prefabs_SpawnableObjectData_RO_ComponentLookup;
         jobData.m_PrefabObjectGeometryData = __TypeHandle.__Game_Prefabs_ObjectGeometryData_RO_ComponentLookup;
         jobData.m_PrefabBuildingData = __TypeHandle.__Game_Prefabs_BuildingData_RO_ComponentLookup;
+        jobData.m_PrefabData = __TypeHandle.__Game_Prefabs_PrefabData_RO_ComponentLookup;
         jobData.m_CustomLaneDirection = __TypeHandle.__CustomLaneDirection_RW_BufferLookup;
         jobData.m_ConnectPositionSource = __TypeHandle.__ConnectPositionSource_RW_BufferLookup;
         jobData.m_ConnectPositionTarget = __TypeHandle.__ConnectPositionTarget_RW_BufferLookup;
