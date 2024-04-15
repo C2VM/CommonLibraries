@@ -5,7 +5,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using C2VM.CommonLibraries.LaneSystem;
@@ -27,13 +26,12 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
-using UnityEngine.Analytics;
 using UnityEngine.Scripting;
 
 namespace Game.Net;
 
 [CompilerGenerated]
-public class C2VMPatchedLaneSystem : GameSystemBase
+public partial class C2VMPatchedLaneSystem : GameSystemBase
 {
     private struct LaneKey : IEquatable<LaneKey>
     {
@@ -272,7 +270,7 @@ public class C2VMPatchedLaneSystem : GameSystemBase
         public Game.Prefabs.RoadFlags m_RoadFlags;
     }
 
-    [BurstCompile]
+    // [BurstCompile]
     private struct UpdateLanesJob : IJobChunk
     {
         [ReadOnly]
