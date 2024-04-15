@@ -36,7 +36,7 @@ public struct ConnectPositionSource : IBufferElementData
         {
             return true;
         }
-        if (m_Owner.Equals(other.m_Owner) && m_LaneIndex.Equals(other.m_LaneIndex))
+        if (m_Owner.Equals(other.m_Owner) && m_GroupIndex.Equals(other.m_GroupIndex) && m_LaneIndex.Equals(other.m_LaneIndex))
         {
             return true;
         }

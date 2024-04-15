@@ -152,7 +152,7 @@ public struct CustomLaneDirection : IBufferElementData, IQueryTypeParameter, ISe
         {
             return true;
         }
-        if (m_Owner.Equals(owner) && m_LaneIndex.Equals(laneIndex))
+        if (m_Owner.Equals(owner) && m_GroupIndex.Equals(groupIndex) && m_LaneIndex.Equals(laneIndex))
         {
             return true;
         }
