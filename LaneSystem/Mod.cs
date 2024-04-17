@@ -27,7 +27,7 @@ public class Mod : IMod
         var harmony = new Harmony(id);
         harmony.PatchAll();
 
-        updateSystem.UpdateAt<Game.Net.C2VMPatchedLaneSystem>(Game.SystemUpdatePhase.Modification4);
+        updateSystem.UpdateBefore<Game.Net.C2VMPatchedLaneSystem, Game.Net.LaneSystem>(Game.SystemUpdatePhase.Modification4);
     }
 
     public void OnDispose()
