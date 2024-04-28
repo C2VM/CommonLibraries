@@ -9,29 +9,31 @@ namespace C2VM.CommonLibraries.LaneSystem;
 
 public class Mod : IMod
 {
-    public static string id = typeof(Mod).Assembly.GetName().Name;
+    public static readonly string m_Id = typeof(Mod).Assembly.GetName().Name;
 
-    public static ILog log = LogManager.GetLogger($"{id}.{nameof(Mod)}").SetShowsErrorsInUI(false);
+    public static readonly string m_InformationalVersion = ((AssemblyInformationalVersionAttribute) System.Attribute.GetCustomAttribute(Assembly.GetAssembly(typeof(Mod)), typeof(AssemblyInformationalVersionAttribute))).InformationalVersion;
+
+    public static readonly ILog m_Log = LogManager.GetLogger($"{m_Id}.{nameof(Mod)}").SetShowsErrorsInUI(false);
 
     public void OnLoad(UpdateSystem updateSystem)
     {
-        string informationalVersion = ((AssemblyInformationalVersionAttribute) System.Attribute.GetCustomAttribute(Assembly.GetAssembly(typeof(Mod)), typeof(AssemblyInformationalVersionAttribute))).InformationalVersion;
-
-        log.Info($"Loading {id} v{informationalVersion}");
+        m_Log.Info($"Loading {m_Id} v{m_InformationalVersion}");
 
         if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
         {
-            log.Info($"Current mod asset at {asset.path}");
+            m_Log.Info($"Current mod asset at {asset.path}");
         }
 
-        var harmony = new Harmony(id);
+        var harmony = new Harmony(m_Id);
         harmony.PatchAll();
+
+        updateSystem.World.GetOrCreateSystemManaged<Game.Net.LaneSystem>().Enabled = false;
 
         updateSystem.UpdateBefore<Game.Net.C2VMPatchedLaneSystem, Game.Net.LaneSystem>(Game.SystemUpdatePhase.Modification4);
     }
 
     public void OnDispose()
     {
-        log.Info(nameof(OnDispose));
+        m_Log.Info(nameof(OnDispose));
     }
 }

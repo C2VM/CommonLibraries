@@ -270,7 +270,7 @@ public partial class C2VMPatchedLaneSystem : GameSystemBase
         public Game.Prefabs.RoadFlags m_RoadFlags;
     }
 
-    // [BurstCompile]
+    [BurstCompile]
     private struct UpdateLanesJob : IJobChunk
     {
         [ReadOnly]
@@ -5450,7 +5450,7 @@ public partial class C2VMPatchedLaneSystem : GameSystemBase
                     customLaneDirectionBuffer = m_CustomLaneDirection[ownerTemp.m_Original];
                 }
 
-                bool[] targetTaken = new bool[targetBuffer.Length];
+                NativeArray<bool> targetTaken = new NativeArray<bool>(targetBuffer.Length, Allocator.Temp);
                 bool fulfilledKerbSideTurn = false;
                 bool fulfilledCentreSideTurn = false;
                 bool fulfilledStraight = false;
@@ -5463,7 +5463,7 @@ public partial class C2VMPatchedLaneSystem : GameSystemBase
                 int rightTurnConnectionNeeded = 0;
                 int uTurnConnectionNeeded = 0;
 
-                CustomLaneDirection[] customLaneDirectionArray = new CustomLaneDirection[sourceBuffer.Length];
+                NativeArray<CustomLaneDirection> customLaneDirectionArray = new NativeArray<CustomLaneDirection>(sourceBuffer.Length, Allocator.Temp);
 
                 for (int i = 0; i < sourceBuffer.Length; i++)
                 {
