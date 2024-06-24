@@ -27,9 +27,10 @@ public class Mod : IMod
         var harmony = new Harmony(m_Id);
         harmony.PatchAll();
 
-        updateSystem.World.GetOrCreateSystemManaged<Game.Net.LaneSystem>().Enabled = false;
+        // updateSystem.World.GetOrCreateSystemManaged<Game.Net.LaneSystem>().Enabled = false;
+        updateSystem.World.GetOrCreateSystemManaged<Game.Net.C2VMPatchedLaneSystem>().Enabled = false;
 
-        updateSystem.UpdateBefore<Game.Net.C2VMPatchedLaneSystem, Game.Net.LaneSystem>(Game.SystemUpdatePhase.Modification4);
+        // updateSystem.UpdateBefore<Game.Net.C2VMPatchedLaneSystem, Game.Net.LaneSystem>(Game.SystemUpdatePhase.Modification4);
     }
 
     public void OnDispose()
